@@ -1,6 +1,5 @@
 var request = require("request");
 var cheerio = require("cheerio");
-var iconv = require('iconv');
 
 var url = 'http://www.wetterwarte-sued.com/v_1_0/aktuelles/vorhersage.php';
 
@@ -30,13 +29,14 @@ var sendWeatherData = function(res, jsonWeather) {
 exports.weather = function(req, res) {
 	
 	request({
-		'url' : url
+		url : url,
+        encoding : "binary"
 	}, function(err, resp, body) {
-		var ic = new iconv.Iconv('iso-8859-1', 'utf-8');
-		var buf = ic.convert(body);
-		var utf8String = buf.toString('utf-8');
-		
-		var jsonWeather = parseWeatherSiteData(utf8String);
+        if (err || resp.statusCode != 200) {
+            res.end("");
+            return;
+        }
+		var jsonWeather = parseWeatherSiteData(body);
 		sendWeatherData(res, jsonWeather);
 	});
 };
